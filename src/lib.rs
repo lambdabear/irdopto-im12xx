@@ -1,3 +1,5 @@
+#![no_std]
+
 use fixedvec::FixedVec;
 use rmodbus::{client::ModbusRequest, ErrorKind, ModbusProto};
 
