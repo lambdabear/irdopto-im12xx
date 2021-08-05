@@ -85,6 +85,54 @@ impl PowerState {
             frequency: data[7] as f32 * 0.01,
         })
     }
+
+    pub fn to_be_bytes(&self) -> [u8; 32] {
+        let mut bytes = [0; 32];
+        let data = [
+            self.voltage,
+            self.current,
+            self.active_power,
+            self.active_energy,
+            self.power_factor,
+            self.co2_emissions,
+            self.temperature,
+            self.frequency,
+        ];
+
+        for i in 0..8 {
+            let b = data[i].to_be_bytes();
+            bytes[i * 4] = b[0];
+            bytes[i * 4 + 1] = b[1];
+            bytes[i * 4 + 2] = b[2];
+            bytes[i * 4 + 3] = b[3];
+        }
+
+        bytes
+    }
+
+    pub fn from_be_bytes(bytes: [u8; 32]) -> Self {
+        let mut data = [0.0; 8];
+
+        for i in 0..8 {
+            data[i] = f32::from_be_bytes([
+                bytes[i * 4],
+                bytes[i * 4 + 1],
+                bytes[i * 4 + 2],
+                bytes[i * 4 + 3],
+            ]);
+        }
+
+        PowerState {
+            voltage: data[0],
+            current: data[1],
+            active_power: data[2],
+            active_energy: data[3],
+            power_factor: data[4],
+            co2_emissions: data[5],
+            temperature: data[6],
+            frequency: data[7],
+        }
+    }
 }
 
 #[cfg(test)]
@@ -115,6 +163,9 @@ mod tests {
                 temperature: 29.0,
                 frequency: 50.0
             }
-        )
+        );
+
+        let bytes = power_state.to_be_bytes();
+        assert_eq!(PowerState::from_be_bytes(bytes), power_state);
     }
 }
